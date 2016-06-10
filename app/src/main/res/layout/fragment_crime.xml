@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
@@ -31,11 +32,17 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp">
         <Button
-            android:text="Button"
+            tools:text="Date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="2"
             android:id="@+id/date_button"/>
+        <Button
+            tools:text="Time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/time_picker_button"/>
         <CheckBox
             android:text="Solved?"
             android:layout_weight="1"
@@ -43,4 +50,22 @@
             android:layout_height="wrap_content"
             android:id="@+id/solved_checkbox"/>
     </LinearLayout>
+
+    <FrameLayout
+        android:padding="4dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <Button
+            android:id="@+id/crime_delete_button"
+            android:text="Delete"
+            android:textStyle="bold"
+            android:textColor="@color/abc_background_cache_hint_selector_material_light"
+            android:layout_gravity="bottom"
+            android:background="@android:color/holo_red_light"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </FrameLayout>
+
 </LinearLayout>
