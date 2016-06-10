@@ -39,8 +39,13 @@ public class CrimeListFragment extends Fragment {
     // Inflated Views
     private RecyclerView mRecyclerView;
     private LinearLayout mEmptyView;
-    private RecyclerView.Adapter<CrimeHolder> mAdapter;
+    private CrimeAdapter mAdapter;
     private Button mEmptyAddButton;
+
+    // Other instance variables
+    private List<Crime> mCrimes;
+
+    /******************** Override Methods ********************/
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -105,6 +110,24 @@ public class CrimeListFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE_CRIME_PAGER_ACTIVITY) {
+            // Get the position of the last changed crime
+            mLastPos = data.getIntExtra(EXTRA_LAST_CRIME_POS, 0);
+            Log.e("tag", "onActivityResult " + mLastPos);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Reload the list
+        updateUI();
+    }
+
+    /****************** RecyclerView Private Classes *****************/
+
     private class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder> {
         private List<Crime> mCrimes;
 
@@ -128,6 +151,10 @@ public class CrimeListFragment extends Fragment {
         @Override
         public int getItemCount() {
             return mCrimes.size();
+        }
+
+        public void setCrimes(List<Crime> crimes) {
+            mCrimes = crimes;
         }
     }
 
@@ -161,7 +188,9 @@ public class CrimeListFragment extends Fragment {
             mCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    // Save value and update database
                     mCrime.setSolved(b);
+                    CrimeLab.get(getActivity()).updateCrime(mCrime);
                 }
             });
         }
@@ -175,24 +204,11 @@ public class CrimeListFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_CODE_CRIME_PAGER_ACTIVITY) {
-            // Get the position of the last changed crime
-            mLastPos = data.getIntExtra(EXTRA_LAST_CRIME_POS, 0);
-            Log.e("tag", "onActivityResult " + mLastPos);
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        // Reload the list
-        updateUI();
-    }
+    /********************* Private Methods **********************/
 
     private void updateUI() {
-        if (CrimeLab.get(getActivity()).getCrimeList().isEmpty()) {
+        List<Crime> crimes = CrimeLab.get(getActivity()).getCrimeList();
+        if (crimes.isEmpty()) {
             // Show the empty view
             mRecyclerView.setVisibility(View.GONE);
             mEmptyView.setVisibility(View.VISIBLE);
@@ -203,11 +219,13 @@ public class CrimeListFragment extends Fragment {
 
             // Create new adapter or update existing
             if (mAdapter == null) {
-                CrimeLab cl = CrimeLab.get(getActivity());
-                mAdapter = new CrimeAdapter(cl.getCrimeList());
+                mAdapter = new CrimeAdapter(crimes);
                 mRecyclerView.setAdapter(mAdapter);
             } else {
-                mAdapter.notifyItemChanged(mLastPos);
+                // Refreshes the list of crimes from the database
+                mAdapter.setCrimes(crimes);
+                //mAdapter.notifyItemChanged(mLastPos);
+                mAdapter.notifyDataSetChanged();
             }
         }
 

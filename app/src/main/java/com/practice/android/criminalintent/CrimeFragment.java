@@ -47,6 +47,8 @@ public class CrimeFragment extends Fragment {
     // Other variables
     private int mPosition;
 
+    /********************* Static Methods ******************/
+
     public static CrimeFragment newInstance(UUID uuid) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_CRIME_ID, uuid);
@@ -55,6 +57,8 @@ public class CrimeFragment extends Fragment {
         cf.setArguments(args);
         return cf;
     }
+
+    /********************* Override Methods **********************/
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -65,7 +69,6 @@ public class CrimeFragment extends Fragment {
             mCrime = CrimeLab.get(getActivity()).getCrime(id);
         else
             mCrime = new Crime("Default Crime");
-
     }
 
     @Override
@@ -156,6 +159,16 @@ public class CrimeFragment extends Fragment {
             }
         }
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        // Update the crime in the database
+        CrimeLab.get(getActivity()).updateCrime(mCrime);
+    }
+
+    /**************************** Private Methods **************************/
 
     private void updateDate() {
         // Update month/day/year

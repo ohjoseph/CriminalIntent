@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
@@ -14,12 +15,14 @@
         android:id="@+id/crime_title_tv"
         android:layout_toLeftOf="@id/crime_checked_box"
         android:padding="4dp"
+        tools:text="Crime Title"
         android:textStyle="bold"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
     <TextView
         android:id="@+id/crime_date_tv"
+        tools:text="Sample Date"
         android:layout_toLeftOf="@id/crime_checked_box"
         android:padding="4dp"
         android:layout_below="@id/crime_title_tv"

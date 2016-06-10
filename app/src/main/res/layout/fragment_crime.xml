@@ -60,7 +60,7 @@
             android:id="@+id/crime_delete_button"
             android:text="Delete"
             android:textStyle="bold"
-            android:textColor="@color/abc_background_cache_hint_selector_material_light"
+            android:textColor="@android:color/white"
             android:layout_gravity="bottom"
             android:background="@android:color/holo_red_light"
             android:layout_width="match_parent"
