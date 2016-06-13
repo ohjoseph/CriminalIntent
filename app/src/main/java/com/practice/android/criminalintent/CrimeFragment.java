@@ -3,9 +3,15 @@ package com.practice.android.criminalintent;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.ShareCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
@@ -16,8 +22,10 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.Date;
 import java.util.UUID;
 
@@ -26,16 +34,16 @@ import java.util.UUID;
  */
 
 public class CrimeFragment extends Fragment {
-    private Crime mCrime;
-
     // Tags for extras and arguments
     private static String ARG_CRIME_ID = "com.android.practice.arg_crime_id";
     private static String TAG_DATE_PICKER_DIALOG = "Dialog Date";
     private static String TAG_TIME_PICKER_DIALOG = "Dialog Time";
 
     // Request codes
-    private static int REQUEST_DATE_PICKER = 10;
-    private static int REQUEST_TIME_PICKER = 5;
+    private static final int REQUEST_DATE_PICKER = 0;
+    private static final int REQUEST_TIME_PICKER = 1;
+    private static final int REQUEST_CONTACT = 2;
+    private static final int REQUEST_PHOTO = 3;
 
     // Inflated views
     private EditText mCrimeTitle;
@@ -44,12 +52,17 @@ public class CrimeFragment extends Fragment {
     private Button mTimeButton;
     private Button mDeleteButton;
     private Button mChooseSuspectButton;
+    private Button mCallSuspectButton;
     private Button mSendCrimeReportButton;
+    private ImageButton mCrimePhotoButton;
 
     // Other variables
-    private int mPosition;
+    private Crime mCrime;
+    private File mPhotoFile;
 
-    /********************* Static Methods ******************/
+    /*********************
+     * Static Methods
+     ******************/
 
     public static CrimeFragment newInstance(UUID uuid) {
         Bundle args = new Bundle();
@@ -60,7 +73,9 @@ public class CrimeFragment extends Fragment {
         return cf;
     }
 
-    /********************* Override Methods **********************/
+    /*********************
+     * Override Methods
+     **********************/
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -71,13 +86,16 @@ public class CrimeFragment extends Fragment {
             mCrime = CrimeLab.get(getActivity()).getCrime(id);
         else
             mCrime = new Crime("Default Crime");
+
+        // Get the file location for photos
+        mPhotoFile = CrimeLab.get(getActivity()).getPhotoFile(mCrime);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_crime, container, false);
 
-        mCrimeTitle = (EditText) v.findViewById(R.id.crime_title);
+        mCrimeTitle = (EditText) v.findViewById(R.id.crime_title_editText);
         mCrimeTitle.setText(mCrime.getTitle());
         mCrimeTitle.addTextChangedListener(new TextWatcher() {
             @Override
@@ -137,33 +155,99 @@ public class CrimeFragment extends Fragment {
             }
         });
 
+        final Intent pickContact =
+                new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+        // Check to make sure Contacts app exists and is accessible
+        PackageManager packageManager = getActivity().getPackageManager();
+        if (packageManager.resolveActivity(pickContact,
+                PackageManager.MATCH_DEFAULT_ONLY) == null) {
+            mChooseSuspectButton.setEnabled(false);
+        }
+
         mChooseSuspectButton = (Button) v.findViewById(R.id.choose_suspect_button);
         mChooseSuspectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                // Open the Contacts app and choose suspect
+                startActivityForResult(pickContact, REQUEST_CONTACT);
             }
         });
+
+        // Set the suspect button with the name of the suspect
+        if (!mCrime.getSuspect().equals("unknown")) {
+            mChooseSuspectButton.setText(mCrime.getSuspect());
+        } else {
+            mChooseSuspectButton.setText("Choose Suspect");
+        }
 
         mSendCrimeReportButton = (Button) v.findViewById(R.id.send_crime_report_button);
         mSendCrimeReportButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Start an activity that can send text
-                Intent i = new Intent(Intent.ACTION_SEND);
-                i.setType("text/plain");
-                i.putExtra(Intent.EXTRA_TEXT, getCrimeReport());
-                i.putExtra(Intent.EXTRA_SUBJECT,
-                        getString(R.string.crime_report_subject));
-                // Always lets the user choose application
-                i = Intent.createChooser(i, getString(R.string.send_report));
+                Intent i = ShareCompat.IntentBuilder.from(getActivity())
+                        .setText(getCrimeReport())
+                        .setSubject(getString(R.string.crime_report_subject))
+                        .setType("text/plain")
+                        .setChooserTitle(R.string.send_report)
+                        .createChooserIntent();
                 startActivity(i);
+            }
+        });
+
+        mCallSuspectButton = (Button) v.findViewById(R.id.call_suspect_button);
+        mCallSuspectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Calls the suspect if there is one
+                if (!mCrime.getSuspect().equals("unknown")) {
+                    // Get the phone number of the contact
+                    Uri callUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+                    String[] projection = {ContactsContract.CommonDataKinds.Phone.NUMBER};
+                    String selection =
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?";
+                    String[] selectionArgs = {Long.toString(mCrime.getSuspectId())};
+                    // Query the Contacts database
+                    Cursor c = getActivity().getContentResolver().query(
+                            callUri, projection, selection, selectionArgs, null);
+                    if (c.getCount() != 0) {
+                        // Dial the number
+                        try {
+                            c.moveToFirst();
+                            String suspectNumber = c.getString(0);
+                            Intent i = new Intent(Intent.ACTION_DIAL,
+                                    Uri.parse("tel:" + suspectNumber));
+                            startActivity(i);
+                        } finally {
+                            c.close();
+                        }
+                    }
+
+                } else {
+                    Toast.makeText(getActivity(), "No Suspect found.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        // Checks if phone can take pictures
+        final Intent captureImage = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        Uri uri = Uri.fromFile(mPhotoFile);
+        captureImage.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+        boolean canTakePhoto = (mPhotoFile != null) &&
+                (captureImage.resolveActivity(packageManager) != null);
+
+        mCrimePhotoButton = (ImageButton) v.findViewById(R.id.crime_photo_imageView);
+        mCrimePhotoButton.setEnabled(canTakePhoto);
+        mCrimePhotoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Takes a picture
+                startActivityForResult(captureImage, REQUEST_PHOTO);
             }
         });
 
         // Sets the time
         updateDate();
-
         return v;
     }
 
@@ -183,6 +267,36 @@ public class CrimeFragment extends Fragment {
                 mCrime.setDate(date);
                 updateDate();
             }
+        } else if (requestCode == REQUEST_CONTACT && data != null) {
+            Uri contactUri = data.getData();
+            // Specify which fields you want your query to get values from
+            String[] queryFields = new String[]{
+                    ContactsContract.Contacts.DISPLAY_NAME,
+                    ContactsContract.Contacts._ID
+            };
+
+            // Perform query - contactUri is the "where" clause
+            Cursor c = getActivity().getContentResolver()
+                    .query(contactUri, queryFields, null, null, null);
+
+            // Double check for results
+            if (c.getCount() == 0) {
+                return;
+            }
+
+            try {
+                // Get suspect name from 1st column
+                c.moveToFirst();
+                String suspect = c.getString(0);
+                mCrime.setSuspect(suspect);
+                mChooseSuspectButton.setText(suspect);
+
+                // Get suspect contact id from 2nd column
+                Long contactId = c.getLong(1);
+                mCrime.setSuspectId(contactId);
+            } finally {
+                c.close();
+            }
         }
     }
 
@@ -194,7 +308,9 @@ public class CrimeFragment extends Fragment {
         CrimeLab.get(getActivity()).updateCrime(mCrime);
     }
 
-    /**************************** Private Methods **************************/
+    /****************************
+     * Private Methods
+     **************************/
 
     private void updateDate() {
         // Update month/day/year
@@ -208,7 +324,7 @@ public class CrimeFragment extends Fragment {
     // Generates Crime Report
     private String getCrimeReport() {
         String solvedString = "";
-        if(mCrime.isSolved()) {
+        if (mCrime.isSolved()) {
             solvedString = getString(R.string.crime_report_solved);
         } else {
             solvedString = getString(R.string.crime_report_unsolved);

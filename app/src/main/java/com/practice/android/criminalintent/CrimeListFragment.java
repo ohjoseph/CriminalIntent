@@ -111,8 +111,11 @@ public class CrimeListFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_CODE_CRIME_PAGER_ACTIVITY) {
             // Get the position of the last changed crime
-            mLastPos = data.getIntExtra(EXTRA_LAST_CRIME_POS, 0);
-            Log.e("tag", "onActivityResult " + mLastPos);
+            if (data != null) {
+                mLastPos = data.getIntExtra(EXTRA_LAST_CRIME_POS, 0);
+            } else {
+                mLastPos = -1;
+            }
         }
     }
 
