@@ -9,4 +9,10 @@
         <item quantity="one">%1$s crime</item>
         <item quantity="other">%1$s crimes</item>
     </plurals>
+    <string name="crime_report">%1$s! The crime was discovered on %2$s. %3$s, and %4$s</string>
+    <string name="crime_report_unsolved">The case is not yet solved</string>
+    <string name="crime_report_solved">The case is solved</string>
+    <string name="crime_report_suspect">the suspect is %s.</string>
+    <string name="crime_report_subject">Criminal Intent Crime Report</string>
+    <string name="send_report">Send Crime Report via</string>
 </resources>

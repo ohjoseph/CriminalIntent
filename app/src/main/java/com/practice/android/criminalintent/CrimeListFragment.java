@@ -42,9 +42,6 @@ public class CrimeListFragment extends Fragment {
     private CrimeAdapter mAdapter;
     private Button mEmptyAddButton;
 
-    // Other instance variables
-    private List<Crime> mCrimes;
-
     /******************** Override Methods ********************/
 
     @Override
@@ -251,10 +248,11 @@ public class CrimeListFragment extends Fragment {
         // Create new crime and open CrimePagerActivity
         CrimeLab cL = CrimeLab.get(getActivity());
         Crime c = new Crime("New Crime");
-        Intent i = CrimePagerActivity
-                .newIntent(getActivity(), c.getId(), cL.getCrimeList().size());
-        // Adds the crime after getting list size
+        // Adds the crime
         cL.addCrime(c);
+        // Start the activity
+        Intent i = CrimePagerActivity
+                .newIntent(getActivity(), c.getId(), cL.getCrimeList().size()-1);
         startActivity(i);
     }
 }

@@ -1,70 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:tools="http://schemas.android.com/tools"
-              android:orientation="vertical"
               android:layout_width="match_parent"
-              android:layout_height="match_parent">
+              android:layout_height="match_parent"
+              android:orientation="vertical">
 
     <TextView
-        android:text="TITLE"
+        style="?android:listSeparatorTextViewStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="?android:listSeparatorTextViewStyle"/>
+        android:text="TITLE"/>
 
     <EditText
         android:id="@+id/crime_title"
-        android:hint="Enter the name of your crime"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
-    <TextView
-        android:text="Date"
-        style="?android:listSeparatorTextViewStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
-    <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp">
+        android:layout_marginRight="16dp"
+        android:hint="Enter the name of your crime"/>
+
+    <TextView
+        style="?android:listSeparatorTextViewStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Date"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:orientation="vertical">
+
         <Button
-            tools:text="Date"
-            android:layout_width="wrap_content"
+            android:id="@+id/date_button"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:id="@+id/date_button"/>
+            tools:text="Date"/>
+
         <Button
-            tools:text="Time"
-            android:layout_width="wrap_content"
+            android:id="@+id/time_picker_button"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:id="@+id/time_picker_button"/>
+            tools:text="Time"/>
+
         <CheckBox
-            android:text="Solved?"
-            android:layout_weight="1"
+            android:id="@+id/solved_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/solved_checkbox"/>
+            android:layout_weight="1"
+            android:text="Solved?"/>
+
+        <Button
+            android:id="@+id/choose_suspect_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Choose Suspect"/>
+
+        <Button
+            android:id="@+id/send_crime_report_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Send Report"/>
+
     </LinearLayout>
 
     <FrameLayout
-        android:padding="4dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:padding="16dp">
 
         <Button
             android:id="@+id/crime_delete_button"
-            android:text="Delete"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:background="@android:color/holo_red_light"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:text="Delete"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"/>
 
     </FrameLayout>
 
