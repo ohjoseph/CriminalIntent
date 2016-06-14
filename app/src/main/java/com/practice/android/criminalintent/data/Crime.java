@@ -1,4 +1,4 @@
-package com.practice.android.criminalintent;
+package com.practice.android.criminalintent.data;
 
 import java.util.Date;
 import java.util.UUID;
@@ -17,10 +17,7 @@ public class Crime {
 
     public Crime() {
         mId = UUID.randomUUID();
-        mTitle = "New Crime";
         mDate = new Date();
-        mSolved = false;
-        mSuspect = "unknown";
     }
 
     public Crime(String title) {

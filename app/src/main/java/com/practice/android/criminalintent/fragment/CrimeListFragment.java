@@ -1,4 +1,4 @@
-package com.practice.android.criminalintent;
+package com.practice.android.criminalintent.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -18,10 +18,13 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.practice.android.criminalintent.data.Crime;
+import com.practice.android.criminalintent.data.CrimeLab;
+import com.practice.android.criminalintent.activity.CrimePagerActivity;
+import com.practice.android.criminalintent.R;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Created by Joseph on 6/6/16.
@@ -42,7 +45,9 @@ public class CrimeListFragment extends Fragment {
     private CrimeAdapter mAdapter;
     private Button mEmptyAddButton;
 
-    /******************** Override Methods ********************/
+    /********************
+     * Override Methods
+     ********************/
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -112,9 +117,9 @@ public class CrimeListFragment extends Fragment {
         if (requestCode == REQUEST_CODE_CRIME_PAGER_ACTIVITY) {
             // Get the position of the last changed crime
             if (data != null) {
-                mLastPos = data.getIntExtra(EXTRA_LAST_CRIME_POS, 0);
+                //mLastPos = data.getIntExtra(EXTRA_LAST_CRIME_POS, 0);
             } else {
-                mLastPos = -1;
+                //mLastPos = -1;
             }
         }
     }
@@ -126,7 +131,9 @@ public class CrimeListFragment extends Fragment {
         updateUI();
     }
 
-    /****************** RecyclerView Private Classes *****************/
+    /******************
+     * RecyclerView Private Classes
+     *****************/
 
     private class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder> {
         private List<Crime> mCrimes;
@@ -200,11 +207,16 @@ public class CrimeListFragment extends Fragment {
         public void onClick(View v) {
             Intent i = CrimePagerActivity.newIntent(getActivity(), mCrime.getId(), mPosition);
             startActivityForResult(i, REQUEST_CODE_CRIME_PAGER_ACTIVITY);
+
+            // Save last position clicked
+            mLastPos = mPosition;
             Log.e("tag", "List onClick: " + mPosition);
         }
     }
 
-    /********************* Private Methods **********************/
+    /*********************
+     * Private Methods
+     **********************/
 
     private void updateUI() {
         List<Crime> crimes = CrimeLab.get(getActivity()).getCrimeList();
@@ -216,17 +228,17 @@ public class CrimeListFragment extends Fragment {
             // Hide the empty view
             mRecyclerView.setVisibility(View.VISIBLE);
             mEmptyView.setVisibility(View.GONE);
+        }
 
-            // Create new adapter or update existing
-            if (mAdapter == null) {
-                mAdapter = new CrimeAdapter(crimes);
-                mRecyclerView.setAdapter(mAdapter);
-            } else {
-                // Refreshes the list of crimes from the database
-                mAdapter.setCrimes(crimes);
-                //mAdapter.notifyItemChanged(mLastPos);
-                mAdapter.notifyDataSetChanged();
-            }
+        // Create new adapter or update existing
+        if (mAdapter == null) {
+            mAdapter = new CrimeAdapter(crimes);
+            mRecyclerView.setAdapter(mAdapter);
+        } else {
+            // Refreshes the list of crimes from the database
+            mAdapter.setCrimes(crimes);
+            //mAdapter.notifyItemChanged(mLastPos);
+            mAdapter.notifyDataSetChanged();
         }
 
         updateSubtitle();
@@ -250,12 +262,13 @@ public class CrimeListFragment extends Fragment {
     private void addNewCrime() {
         // Create new crime and open CrimePagerActivity
         CrimeLab cL = CrimeLab.get(getActivity());
-        Crime c = new Crime("New Crime");
+        Crime c = new Crime();
         // Adds the crime
         cL.addCrime(c);
+        int size = cL.getCrimeList().size();
         // Start the activity
         Intent i = CrimePagerActivity
-                .newIntent(getActivity(), c.getId(), cL.getCrimeList().size()-1);
+                .newIntent(getActivity(), c.getId(), cL.getCrimeList().size() - 1);
         startActivity(i);
     }
 }

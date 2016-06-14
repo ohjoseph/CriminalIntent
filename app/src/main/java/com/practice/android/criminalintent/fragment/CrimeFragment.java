@@ -1,10 +1,9 @@
-package com.practice.android.criminalintent;
+package com.practice.android.criminalintent.fragment;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -18,14 +17,22 @@ import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.practice.android.criminalintent.data.Crime;
+import com.practice.android.criminalintent.data.CrimeLab;
+import com.practice.android.criminalintent.data.PictureUtils;
+import com.practice.android.criminalintent.R;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 
@@ -38,12 +45,14 @@ public class CrimeFragment extends Fragment {
     private static String ARG_CRIME_ID = "com.android.practice.arg_crime_id";
     private static String TAG_DATE_PICKER_DIALOG = "Dialog Date";
     private static String TAG_TIME_PICKER_DIALOG = "Dialog Time";
+    private static String TAG_ZOOM_PHOTO_DIALOG = "Dialog zoom photo";
 
     // Request codes
     private static final int REQUEST_DATE_PICKER = 0;
     private static final int REQUEST_TIME_PICKER = 1;
     private static final int REQUEST_CONTACT = 2;
     private static final int REQUEST_PHOTO = 3;
+    private static final int REQUEST_ZOOM_PHOTO = 4;
 
     // Inflated views
     private EditText mCrimeTitle;
@@ -55,6 +64,7 @@ public class CrimeFragment extends Fragment {
     private Button mCallSuspectButton;
     private Button mSendCrimeReportButton;
     private ImageButton mCrimePhotoButton;
+    private ImageView mCrimePhotoView;
 
     // Other variables
     private Crime mCrime;
@@ -174,10 +184,10 @@ public class CrimeFragment extends Fragment {
         });
 
         // Set the suspect button with the name of the suspect
-        if (!mCrime.getSuspect().equals("unknown")) {
+        if (mCrime.getSuspect() != null) {
             mChooseSuspectButton.setText(mCrime.getSuspect());
         } else {
-            mChooseSuspectButton.setText("Choose Suspect");
+            mChooseSuspectButton.setText("Choose Suspect Name");
         }
 
         mSendCrimeReportButton = (Button) v.findViewById(R.id.send_crime_report_button);
@@ -200,7 +210,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 // Calls the suspect if there is one
-                if (!mCrime.getSuspect().equals("unknown")) {
+                if (mCrime.getSuspect() != null) {
                     // Get the phone number of the contact
                     Uri callUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
                     String[] projection = {ContactsContract.CommonDataKinds.Phone.NUMBER};
@@ -236,7 +246,7 @@ public class CrimeFragment extends Fragment {
         boolean canTakePhoto = (mPhotoFile != null) &&
                 (captureImage.resolveActivity(packageManager) != null);
 
-        mCrimePhotoButton = (ImageButton) v.findViewById(R.id.crime_photo_imageView);
+        mCrimePhotoButton = (ImageButton) v.findViewById(R.id.take_photo_button);
         mCrimePhotoButton.setEnabled(canTakePhoto);
         mCrimePhotoButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -246,8 +256,31 @@ public class CrimeFragment extends Fragment {
             }
         });
 
+        boolean photoExists = (mPhotoFile != null) && mPhotoFile.exists();
+        mCrimePhotoView = (ImageView) v.findViewById(R.id.crime_photo_imageView);
+        mCrimePhotoView.setEnabled(photoExists);
+        mCrimePhotoView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Show the zoomed up photo in a dialog
+                FragmentManager fm = getFragmentManager();
+                ImageFragment frag = ImageFragment.newInstance(mPhotoFile);
+                frag.setTargetFragment(CrimeFragment.this, REQUEST_ZOOM_PHOTO);
+                frag.show(fm, TAG_ZOOM_PHOTO_DIALOG);
+            }
+        });
+        ViewTreeObserver observer = mCrimePhotoView.getViewTreeObserver();
+        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                updatePhotoView();
+            }
+        });
+
         // Sets the time
         updateDate();
+        updateCallButton();
+
         return v;
     }
 
@@ -296,7 +329,10 @@ public class CrimeFragment extends Fragment {
                 mCrime.setSuspectId(contactId);
             } finally {
                 c.close();
+                updateCallButton();
             }
+        } else if (requestCode == REQUEST_PHOTO) {
+            updatePhotoView();
         }
     }
 
@@ -337,5 +373,32 @@ public class CrimeFragment extends Fragment {
         String report = getString(R.string.crime_report,
                 mCrime.getTitle(), dateString, solvedString, suspect);
         return report;
+    }
+
+    // Updates the Crime's photo button
+    private void updatePhotoView() {
+        if (mPhotoFile == null || !mPhotoFile.exists()) {
+            mCrimePhotoView.setImageDrawable(null);
+        } else {
+            try {
+                Bitmap bitmap = PictureUtils.getScaledBitmap(
+                        mPhotoFile.getPath(),
+                        mCrimePhotoView.getMaxWidth(),
+                        mCrimePhotoView.getMaxHeight());
+                mCrimePhotoView.setImageBitmap(bitmap);
+                mCrimePhotoView.setEnabled(true);
+            } catch (IOException e) {
+                // Do nothing
+            }
+        }
+    }
+
+    // Update the call button
+    private void updateCallButton() {
+        if (mCrime.getSuspectId() != 0) {
+            mCallSuspectButton.setEnabled(true);
+        } else {
+            mCallSuspectButton.setEnabled(false);
+        }
     }
 }

@@ -11,7 +11,7 @@
         style="?android:listSeparatorTextViewStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
         android:text="Details"/>
 
     <LinearLayout
@@ -19,37 +19,38 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/date_button"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_weight="1"
+            android:layout_marginTop="4dp"
             tools:text="Date"/>
 
         <Button
             android:id="@+id/time_picker_button"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_weight="1"
+            android:layout_marginTop="4dp"
             tools:text="Time"/>
 
-        <CheckBox
+    </LinearLayout>
+
+    <CheckBox
             android:id="@+id/solved_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_weight="1"
+            android:layout_marginLeft="16dp"
             android:text="Solved?"/>
-
-    </LinearLayout>
 
     <TextView
         style="?android:listSeparatorTextViewStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
         android:text="Actions"/>
 
     <LinearLayout
@@ -63,21 +64,21 @@
             android:id="@+id/choose_suspect_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:text="Choose Suspect"/>
 
         <Button
             android:id="@+id/send_crime_report_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:text="Send Report"/>
 
         <Button
             android:id="@+id/call_suspect_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:text="Call Suspect"/>
 
     </LinearLayout>

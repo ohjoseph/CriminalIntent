@@ -1,4 +1,4 @@
-package com.practice.android.criminalintent;
+package com.practice.android.criminalintent.data;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,7 +8,6 @@ import android.os.Environment;
 import android.text.format.DateFormat;
 
 import com.practice.android.criminalintent.database.CrimeBaseHelper;
-import com.practice.android.criminalintent.database.CrimeDbSchema;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -51,6 +50,7 @@ public class CrimeLab {
         values.put(CrimeTable.Cols.DATE, crime.getDate().getTime());
         values.put(CrimeTable.Cols.SOLVED, crime.isSolved());
         values.put(CrimeTable.Cols.SUSPECT, crime.getSuspect());
+        values.put(CrimeTable.Cols.SUSPECT_ID, crime.getSuspectId());
 
         return values;
     }
@@ -70,7 +70,7 @@ public class CrimeLab {
         ContentValues values = getContentValues(c);
 
         // Store ContentValue in database
-        mDatabase.insert(CrimeTable.NAME, null,values);
+        mDatabase.insertOrThrow(CrimeTable.NAME, null, values);
     }
 
     public void updateCrime(Crime crime) {
