@@ -1,5 +1,7 @@
 package com.practice.android.criminalintent.fragment;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -33,7 +35,6 @@ import java.util.List;
 public class CrimeListFragment extends Fragment {
 
     private static final int REQUEST_CODE_CRIME_PAGER_ACTIVITY = 100;
-    public static final String EXTRA_LAST_CRIME_POS = "com.android.practice.last_crime_position";
 
     // Position of the last clicked Crime
     private int mLastPos = 0;
@@ -45,9 +46,26 @@ public class CrimeListFragment extends Fragment {
     private CrimeAdapter mAdapter;
     private Button mEmptyAddButton;
 
+    // Other variables
+    private Callbacks mCallbacks;
+
+    /********************
+     * Callbacks Interface
+     ********************/
+
+    public interface Callbacks {
+        void onCrimeSelected(Crime crime);
+    }
+
     /********************
      * Override Methods
      ********************/
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mCallbacks = (Callbacks) context;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -99,7 +117,9 @@ public class CrimeListFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.menu_item_new_crime:
                 // Make new Crime
-                addNewCrime();
+                Crime c = addNewCrime();
+                updateUI();
+                mCallbacks.onCrimeSelected(c);
                 return true;
             case R.id.menu_item_show_subtitle:
                 // Recreate toolbar to update subtitle button
@@ -113,22 +133,16 @@ public class CrimeListFragment extends Fragment {
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_CODE_CRIME_PAGER_ACTIVITY) {
-            // Get the position of the last changed crime
-            if (data != null) {
-                //mLastPos = data.getIntExtra(EXTRA_LAST_CRIME_POS, 0);
-            } else {
-                //mLastPos = -1;
-            }
-        }
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         // Reload the list
         updateUI();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
     }
 
     /******************
@@ -205,8 +219,7 @@ public class CrimeListFragment extends Fragment {
         // Starts the CrimePagerActivity when clicked
         @Override
         public void onClick(View v) {
-            Intent i = CrimePagerActivity.newIntent(getActivity(), mCrime.getId(), mPosition);
-            startActivityForResult(i, REQUEST_CODE_CRIME_PAGER_ACTIVITY);
+            mCallbacks.onCrimeSelected(mCrime);
 
             // Save last position clicked
             mLastPos = mPosition;
@@ -215,10 +228,10 @@ public class CrimeListFragment extends Fragment {
     }
 
     /*********************
-     * Private Methods
+     * Helper Methods
      **********************/
 
-    private void updateUI() {
+    public void updateUI() {
         List<Crime> crimes = CrimeLab.get(getActivity()).getCrimeList();
         if (crimes.isEmpty()) {
             // Show the empty view
@@ -259,16 +272,12 @@ public class CrimeListFragment extends Fragment {
         activity.getSupportActionBar().setSubtitle(subtitle);
     }
 
-    private void addNewCrime() {
+    private Crime addNewCrime() {
         // Create new crime and open CrimePagerActivity
         CrimeLab cL = CrimeLab.get(getActivity());
         Crime c = new Crime();
         // Adds the crime
         cL.addCrime(c);
-        int size = cL.getCrimeList().size();
-        // Start the activity
-        Intent i = CrimePagerActivity
-                .newIntent(getActivity(), c.getId(), cL.getCrimeList().size() - 1);
-        startActivity(i);
+        return c;
     }
 }

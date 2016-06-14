@@ -18,20 +18,17 @@ import com.practice.android.criminalintent.fragment.CrimeFragment;
 import java.util.List;
 import java.util.UUID;
 
-public class CrimePagerActivity extends AppCompatActivity {
+public class CrimePagerActivity extends AppCompatActivity
+        implements CrimeFragment.Callbacks {
 
     public static String EXTRA_CRIME_ID = "com.android.practice.crime_uuid_activity";
-    public static String EXTRA_CRIME_POSITION = "com.android.practice.crime_position";
 
     private ViewPager mViewPager;
     private List<Crime> mCrimes;
 
-    private int mPosition;
-
-    public static Intent newIntent(Context packageContext, UUID id, int position) {
+    public static Intent newIntent(Context packageContext, UUID id) {
         Intent i = new Intent(packageContext, CrimePagerActivity.class);
         i.putExtra(EXTRA_CRIME_ID, id);
-        i.putExtra(EXTRA_CRIME_POSITION, position);
         return i;
     }
 
@@ -44,18 +41,12 @@ public class CrimePagerActivity extends AppCompatActivity {
         mCrimes = CrimeLab.get(this).getCrimeList();
         UUID crimeId = (UUID) getIntent().getSerializableExtra(EXTRA_CRIME_ID);
 
-        // Get Intent Extras
-        mPosition = getIntent().getIntExtra(EXTRA_CRIME_POSITION, 4);
-
         // Set the viewpager and its adapter
         FragmentManager fragmentManager = getSupportFragmentManager();
         mViewPager = (ViewPager) findViewById(R.id.crime_view_pager);
         mViewPager.setAdapter(new FragmentStatePagerAdapter(fragmentManager) {
             @Override
             public Fragment getItem(int position) {
-                Log.e("tag", "GetItem: " + position);
-                // Save the position of last crime edited
-                //setCrimeResult(mPosition);
                 // Get the associated Crime
                 UUID id = mCrimes.get(position).getId();
                 return CrimeFragment.newInstance(id);
@@ -68,17 +59,15 @@ public class CrimePagerActivity extends AppCompatActivity {
         });
 
         // Show the specific Crime
-        for (int i = 0; i < mCrimes.size(); i++ ) {
+        for (int i = 0; i < mCrimes.size(); i++) {
             if (crimeId.equals(mCrimes.get(i).getId())) {
                 mViewPager.setCurrentItem(i);
             }
         }
     }
 
-    private void setCrimeResult(int position) {
-        // Send the position of Crime back to CLF to be updated
-        Intent i = new Intent();
-        setResult(CrimePagerActivity.RESULT_OK, i);
+    @Override
+    public void onCrimeUpdated(Crime crime) {
+        // Do nothing
     }
-
 }
