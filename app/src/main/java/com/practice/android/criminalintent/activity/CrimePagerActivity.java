@@ -8,11 +8,10 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
+import com.practice.android.criminalintent.R;
 import com.practice.android.criminalintent.data.Crime;
 import com.practice.android.criminalintent.data.CrimeLab;
-import com.practice.android.criminalintent.R;
 import com.practice.android.criminalintent.fragment.CrimeFragment;
 
 import java.util.List;

@@ -175,7 +175,9 @@ public class CrimeListFragment extends Fragment {
         }
 
         public void setCrimes(List<Crime> crimes) {
-            mCrimes = crimes;
+            mCrimes.clear();
+            mCrimes.addAll(crimes);
+            notifyDataSetChanged();
         }
     }
 
@@ -250,8 +252,6 @@ public class CrimeListFragment extends Fragment {
         } else {
             // Refreshes the list of crimes from the database
             mAdapter.setCrimes(crimes);
-            //mAdapter.notifyItemChanged(mLastPos);
-            mAdapter.notifyDataSetChanged();
         }
 
         updateSubtitle();
